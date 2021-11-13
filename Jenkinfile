@@ -1,0 +1,56 @@
+pipeline{
+
+agent any
+
+triggers{
+pollSCM('* * * * *')
+}
+
+tools{
+    maven 'maven3.8.3'
+}
+
+options{
+timestamps()
+buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5'))
+}
+
+stages{
+
+  stage('CheckOutCode'){
+    steps{
+    git branch: 'main', credentialsId: 'sekhar_9676', url: 'https://github.com/sekhar9676/JavaWebApp.git'
+	
+	}
+  }
+  
+  stage('Build'){
+  steps{
+  sh  "mvn clean package"
+  }
+  }
+  
+  stage('DeployAppIntoTomcat'){
+  steps{
+  sshagent(['bbdb1021-678e-4d03-a3c9-8b1e4bd8fd84']) {
+   sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@54.226.74.145:/opt/tomcat8/webapps/"    
+  }
+  }
+  }
+
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
